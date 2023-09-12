@@ -6,7 +6,6 @@ bool is_numeric(const char *str) {
     size_t size = std::strlen(str);
     for (size_t i = 0; i < size; ++i) {
         if (!std::isdigit(str[i])) {
-            std::cout << str[i] << std::endl;
             return false;
         }
     }
