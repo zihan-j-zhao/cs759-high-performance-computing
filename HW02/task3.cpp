@@ -36,12 +36,12 @@ int main(int argc, char *argv[]) {
   double *A = new double[DIM * DIM];
   double *B = new double[DIM * DIM];
   double *C = new double[DIM * DIM];
-  std::memset(C, 0, DIM * DIM);
   generate(A, DIM, 0.0, 5.0);
   generate(B, DIM, 0.0, 5.0);
 
   std::cout << DIM << std::endl;
 
+  std::memset((void *)C, 0, DIM * DIM * sizeof(double));
   T0();
   mmul1(A, B, C, DIM);
   T1();
@@ -49,6 +49,7 @@ int main(int argc, char *argv[]) {
   std::cout << dur.count() << std::endl;
   std::cout << C[DIM * DIM - 1] << std::endl;
 
+  std::memset((void *)C, 0, DIM * DIM * sizeof(double));
   T0();
   mmul2(A, B, C, DIM);
   T1();
@@ -56,6 +57,7 @@ int main(int argc, char *argv[]) {
   std::cout << dur.count() << std::endl;
   std::cout << C[DIM * DIM - 1] << std::endl;
 
+  std::memset((void *)C, 0, DIM * DIM * sizeof(double));
   T0();
   mmul3(A, B, C, DIM);
   T1();
@@ -66,6 +68,7 @@ int main(int argc, char *argv[]) {
   std::vector<double> _A, _B;
   _A.assign(A, A + DIM * DIM);
   _B.assign(B, B + DIM * DIM);
+  std::memset((void *)C, 0, DIM * DIM * sizeof(double));
   T0();
   mmul4(_A, _B, C, DIM);
   T1();
