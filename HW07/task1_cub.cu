@@ -25,7 +25,7 @@ void generate(T *output, std::size_t n, float lower, float upper) {
 
 
 int main(int argc, char *argv[]) {
-  const unsigned int n = atoi(argv[1]);
+  const unsigned int n = atol(argv[1]);
 
   float *h_in, *d_in, *d_sum, gpu_sum;
   h_in = new float[n];
