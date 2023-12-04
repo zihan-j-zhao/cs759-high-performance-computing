@@ -4,6 +4,10 @@
 #include <cmath>
 #include <vector>
 
+#ifdef X_OPENMP
+#include <omp.h>
+#endif
+
 namespace mean_reversion {
 namespace stat {
 inline namespace basic {
@@ -16,6 +20,23 @@ inline namespace basic {
     double reduce(const std::vector<double> &v) {
         double acc = 0;
         for (double e : v) acc += e;
+        return acc;
+    }
+
+    /**
+     * @brief Reduces the vector given the reducer.
+     * 
+     * @tparam T The type of elements in the vector.
+     * @tparam V The type of the accumulator and return value.
+     * @param v The vector to be reduced.
+     * @param init The initial value of the accumulator.
+     * @param reducer A user-supplied reducer function. 
+     * @return V The final accumulator.
+     */
+    template<typename T, typename V>
+    V reduce(const std::vector<T> &v, V init, V (*reducer)(V, const T*)) {
+        V acc = init;
+        for (const T &e : v) acc = reducer(acc, &e);
         return acc;
     }
 
