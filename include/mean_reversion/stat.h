@@ -22,7 +22,7 @@ inline namespace basic {
     /**
      * @brief Computes the mean value of the vector of doubles.
      * 
-     * Note that if the input vector is empty, this returns 0.
+     * Note that 0 is returned if the input vector is empty.
      * 
      * @param v The vector of doubles.
      * @return The mean of the doubles.
@@ -38,7 +38,7 @@ inline namespace basic {
     /**
      * @brief Computes the standard deviation of the vector of doubles.
      * 
-     * Note that if the input vector is empty, this returns 0.
+     * Note that 0 is returned if the input vector is empty.
      * 
      * @param v The vector of doubles.
      * @return The standard deviation of the doubles. 
@@ -58,8 +58,8 @@ inline namespace basic {
     /**
      * @brief Computes the covariance of two vectors of doubles.
      * 
-     * Note that if input vectors have different sizes or both are empty, this 
-     * returns 0.
+     * Note that 0 is returned if input vectors have different sizes or both 
+     * are empty.
      * 
      * @param v1 A vector of doubles.
      * @param v2 A vector of doubles.
@@ -87,8 +87,8 @@ inline namespace basic {
      * Correlation Coefficient (PCC), is from its Wikipedia page
      * (https://en.wikipedia.org/wiki/Pearson_correlation_coefficient).
      * 
-     * Note that if input vectors have different sizes or both are empty, this 
-     * returns 0.
+     * Note that 0 is returned if input vectors have different sizes or both 
+     * are empty.
      * 
      * @param v1 A vector of doubles.
      * @param v2 A vector of doubles.
@@ -100,18 +100,40 @@ inline namespace basic {
 
         return covar(v1, v2) / (stdev(v1) * stdev(v2));
     }
-}
 
-namespace openmp
-{
+    /**
+     * @brief Gets the maximum element from the vector given the comparator.
+     * 
+     * Note that nullptr is returned if the input vector is empty.
+     * 
+     * @tparam T The type of elements in the vector.
+     * @param v The vector from which the maximum element is extracted.
+     * @param compar A user-defined comparator for finding the maximum element.
+     * @return T The maximum element of the vector.
+     */
+    template<typename T>
+    T* max(const std::vector<T> &v, int (*compar)(const T*, const T*)) {
+        if (v.empty()) return nullptr;
 
-}
+        T* max_ele = &v[0];
+        size_t count = v.size();
+        for (size_t i = 1; i < count; ++i) {
+            if (compar(&v[i], max_ele) >= 1) {
+                max_ele = &v[i];
+            }
+        }
+        return max_ele;
+    }
+} // namespace basic (sequential)
 
-namespace cuda
-{
+namespace openmp {
 
-}
-}
+} // namespace openmp
+
+namespace cuda {
+
+} // namespace cuda
 } // namespace stat
+} // namespace mean_reversion
 
 #endif
