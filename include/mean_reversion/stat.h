@@ -122,16 +122,53 @@ inline namespace basic {
                 max_ele = &v[i];
             }
         }
+
         return max_ele;
     }
+
+    /**
+     * @brief Computes the standard error of the sample.
+     * 
+     * @param v The sample vector.
+     * @return The standard error of the sample. 
+     */
+    double stderror(const std::vector<double> &v) {
+        if (v.empty()) return 0.0;
+
+        return stdev(v) / v.size();
+    }
+
+    /**
+     * @brief Computes the first difference of the given time series.
+     * 
+     * Note that an empty vector is returned if the given time series is empty 
+     * or has only one observation.
+     * 
+     * @param v The time series to be differenced.
+     * @return The first difference.
+     */
+    std::vector<double> diff(const std::vector<double> &v) {
+        if (v.empty() || v.size() < 2) return {};
+
+        std::vector<double> d;
+        size_t count = v.size();
+        for (size_t i = 1; i < count; ++i)
+            d.push_back(v[i] - v[i - 1]);
+        
+        return d;
+    }
+
+    // TODO: ADF linear regression model (OLS, without time trend)
+    // TODO: ADF critical value table
+    // TODO: test statistic: gamma / stderror
 } // namespace basic (sequential)
 
 namespace openmp {
-
+    // TODO: speed up 'for' loops
 } // namespace openmp
 
 namespace cuda {
-
+    // TODO: speed up computation using CUDA
 } // namespace cuda
 } // namespace stat
 } // namespace mean_reversion
