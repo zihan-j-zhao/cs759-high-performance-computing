@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <vector>
+#include <functional>
 
 #ifdef X_OPENMP
 #include <omp.h>
@@ -34,7 +35,7 @@ inline namespace basic {
      * @return V The final accumulator.
      */
     template<typename T, typename V>
-    V reduce(const std::vector<T> &v, V init, V (*reducer)(V, const T*)) {
+    V reduce(const std::vector<T> &v, V init, std::function<V(V, T*)> reducer) {
         V acc = init;
         for (const T &e : v) acc = reducer(acc, &e);
         return acc;
@@ -148,6 +149,26 @@ inline namespace basic {
     }
 
     /**
+     * @brief Computes the residuals of the given vectors.
+     * 
+     * Note that an empty vector is returned if two vectors have different 
+     * sizes or are both empty.
+     * 
+     * @param v1 A vector of doubles.
+     * @param v2 A vector of doubles.
+     * @return The residuals of the two vectors.
+     */
+    std::vector<double> residual(const std::vector<double> &v1, 
+                                    const std::vector<double> &v2) {
+        if (v1.size() != v2.size() || v1.empty()) return {};
+
+        std::vector<double> res;
+        size_t count = v1.size();
+        for (size_t i = 0; i < count; ++i) res.push_back(v2[i] - v1[i]);
+        return res;
+    }
+
+    /**
      * @brief Computes the standard error of the sample.
      * 
      * @param v The sample vector.
@@ -158,6 +179,20 @@ inline namespace basic {
 
         return stdev(v) / v.size();
     }
+
+    /**
+     * @brief Computes the t-value given the estimated coefficient and its 
+     * standard error.
+     * 
+     * @param coeff The estimated coefficient.
+     * @param se_coeff The standard error of the estimated coefficient.
+     * @return The t-value of the estimated coefficient.
+     */
+    double tvalue(double coeff, double se_coeff) {
+        return coeff / se_coeff;
+    }
+
+    // TODO: pvalue function
 
     /**
      * @brief Computes the first difference of the given time series.
@@ -177,6 +212,57 @@ inline namespace basic {
             d.push_back(v[i] - v[i - 1]);
         
         return d;
+    }
+
+    /**
+     * @brief Computes the standard errors of estimated slope and intercept.
+     * 
+     * Note that a pari of {0.0, 0.0} is returned if two vectors have different
+     * sizes or are both empty.
+     * 
+     * @param x The independent values in a linear regression model.
+     * @param y The dependent values in a linear regression model.
+     * @param slope The estimated slope.
+     * @param intercept The estimated intercept.
+     * @return [0] stores the error for slope; [1] the error for intercept.
+     */
+    std::pair<double, double> stderrors(const std::vector<double> &x, 
+                                        const std::vector<double> &y, 
+                                        double slope, double intercept) {
+        if (x.size() != y.size() || x.empty()) return {0.0, 0.0};
+
+        // Compute the residual sum of squares (RSS)
+        std::vector<double> y_pred;
+        for (double xi : x) y_pred.push_back(slope * xi + intercept);
+        std::vector<double> res = residual(y_pred, y);
+        auto rss_reducer = [](double acc, const double *e) {
+            return acc + std::pow(*e, 2);
+        };
+        double rss = reduce<double, double>(res, 0.0, rss_reducer);
+
+        // Compute the sum of squares of differences
+        size_t count = x.size();
+        double mean_x = mean(x);
+        auto sqdiff_reducer = [mean_x](double acc, const double *xi) {
+            return acc + std::pow(*xi - mean_x, 2);
+        };
+        double sqdiff = reduce<double, double>(x, 0.0, sqdiff_reducer);
+
+        // Compute the standard errors for slope and intercept
+        double se_slope = std::sqrt(rss / (count - 2) / sqdiff);
+        double se_intercept = se_slope;
+        se_intercept *= std::sqrt(1 / count + std::pow(mean_x, 2) / sqdiff);
+        return {se_slope, se_intercept};
+    }
+
+    /**
+     * @brief Computes the t-value and p-value for the given dataset.
+     * 
+     * @param v The dataset.
+     * @return [0] stores the t-value; [1] the p-value
+     */
+    std::pair<double, double> adfuller(const std::vector<double> &v) {
+        return {0.0, 0.0};
     }
 
     // TODO: ADF linear regression model (OLS, without time trend)
