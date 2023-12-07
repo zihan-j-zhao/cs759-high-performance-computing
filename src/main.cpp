@@ -6,12 +6,13 @@ int main(int argc, char *argv[])
 {
   std::cout << "Hello World\n";
 
-  std::vector<double> d1 = {1, 2, 3, 4, 5, 6};
-  std::vector<double> d2 = {1, 2, 3, 4, 5, 6};
-  double covar = mean_reversion::stat::covar(d1, d2);
-  std::cout << covar << std::endl;
-  double corr = mean_reversion::stat::corr(d1, d2);
-  std::cout << corr << std::endl;
+  std::vector<double> d1 = {10, 2, 7, 1, 9, 6, 5, 8, 3, 4, 
+                            10, 2, 7, 1, 9, 6, 5, 8, 3, 4, 
+                            10, 2, 7, 1, 9, 6, 5, 8, 3, 4}; // stationary!
+  std::vector<double> d2 = {1, 2, 3, 4, 5, 8};
+  double t, p;
+  std::tie(t, p) = mean_reversion::stat::adfuller(d1);
+  std::cout << t << "," << p << std::endl;
 
   return 0;
 }
