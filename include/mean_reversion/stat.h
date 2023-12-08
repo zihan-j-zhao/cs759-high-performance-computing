@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <vector>
+#include <iostream>
 #include <algorithm>
 #include <functional>
 
@@ -254,6 +255,24 @@ inline namespace basic {
     }
 
     /**
+     * @brief Computes the z-score for the given dataset.
+     * 
+     * @param data The dataset.
+     * @return The z-score for each value in the dataset.
+     */
+    std::vector<double> zscore(const std::vector<double> &data) {
+        if (data.empty()) return {};
+
+        std::vector<double> scores;
+        double _mean = mean(data);
+        double _stdev = stdev(data);
+        for (double val : data) 
+            scores.push_back((val - _mean) / _stdev);
+
+        return scores;
+    }
+
+    /**
      * @brief Computes the first difference of the given time series.
      * 
      * Note that an empty vector is returned if the given time series is empty 
@@ -392,6 +411,32 @@ inline namespace basic {
         double p_value = pvalue(t_value);
 
         return {t_value, p_value};
+    }
+
+    /**
+     * @brief Computes the moving average of the given dataset.
+     * 
+     * Note that an empty vector is returned if data is empty or window size
+     * is invalid.
+     * 
+     * @param data The dataset.
+     * @param window The window size (positive integer).
+     * @return The moving average given the dataset and window size.
+     */
+    std::vector<double> mavg(const std::vector<double> &data, int window) {
+        if (data.empty() || window <= 0) return {};
+
+        std::vector<double> average;
+        int size = data.size();
+        for (int i = 0; i < size - window; ++i) {
+            double sum = 0.0;
+            for (int j = i; j < i + window; ++j) {
+                sum += data[j];
+            }
+            average.push_back(sum / window);
+        }
+
+        return average;
     }
 
     // TODO: ADF critical value table
