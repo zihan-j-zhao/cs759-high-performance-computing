@@ -6,6 +6,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <utility>
 #include <iostream>
 #include <algorithm>
 
@@ -288,6 +289,7 @@ inline namespace basic {
                 pair.set_metric('r');
             } else {
                 pair.set_metric('s');
+                cout << s_st.first << ", " << s_st.second << std::endl;
             }
             return true;
         }
@@ -296,39 +298,43 @@ inline namespace basic {
     }
 
     /**
-     * @brief Selects a pair of stocks.
+     * @brief Gets a list of indices of dates to buy/sell stocks.
      * 
-     * This function selects the pair whose correlation is the most negative,
-     * i.e., whose PCC is closest to -1.0. The reason is that we want to long
-     * stock A and short stock B. Note aslo that with this goal, it never
-     * returns a pair of the same stock because (A, A) always has a PCC = 1.0.
-     * (-1, -1) is returned if stocks is empty.
-     * 
-     * @param stocks The list of stocks to compare.
-     * @return [0] and [1] store the indices of stocks; [2] the PCC.
+     * @param metric The metric stock on which signals are based.
+     * @return [0] stores buy times; [1] sell times.
      */
-    tuple<int, int, double> select_pair(const vector<Stock> &stocks) {
-        if (stocks.empty()) return {-1, -1, 1.0};
+    pair<vector<int>, vector<int>> get_signals(const StockPair &pair) {
+        auto prices = pair.metric().prices();
+        
+        auto mavg_5 = mean_reversion::stat::mavg(prices, 5);
+        auto mavg_20 = mean_reversion::stat::mavg(prices, 20);
+        auto mstd_20 = mean_reversion::stat::mstd(prices, 20);
 
-        double corr = 1.0; // max, corr in [-1.0, 1.0]
-        int idx_a = -1, idx_b = -1;
-        size_t count = stocks.size();
-
-        for (size_t i = 0; i < count; ++i) {
-            for (size_t j = 0; j < count; ++j) {
-                vector<double> a = stocks[i].prices();
-                vector<double> b = stocks[j].prices();
-                double i_j_corr = mean_reversion::stat::corr(a, b);
-                if (i_j_corr <= corr) {
-                    idx_a = i;
-                    idx_b = j;
-                    corr = i_j_corr;
-                }
+        // Compute zscores
+        vector<double> zscores;
+        size_t mavg_count = min(mavg_20.size(), mavg_5.size());
+        for (size_t i = 0; i < mavg_count; ++i)
+            zscores.push_back((mavg_5[i + 15] - mavg_20[i]) / mstd_20[i]);
+        
+        // Compute signals
+        vector<int> sells, buys;
+        size_t metric_count = pair.metric().size();
+        for (size_t i = 0; i < metric_count; ++i) {
+            if (i < 20) {
+                sells.push_back(i);
+                continue;
             }
-        }
 
-        return {idx_a, idx_b, corr};
+            if (zscores[i - 20] >= 1)
+                sells.push_back(i);
+            if (zscores[i - 20] <= -1) 
+                buys.push_back(i);
+        }
+        
+        return {buys, sells};
     }
+
+    // TODO: save times as csv file
 
 } // namespace basic (sequential)
 } // namesapce trade

@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
     //     return 1;
     // }
 
-    std::string filepath = "F:\\University of Wisconsin-Madison\\Computer Science 759\\FinalProject\\NASDAQ_Top_50_history.csv";
+    std::string filepath = "/home/jaylan/private/cs759/assignments/FinalProject/NASDAQ_Top_50_history.csv";
     std::vector<trade::Stock> stocks = trade::load_from_csv(filepath);
 
     int idx_a, idx_b;
@@ -22,11 +22,19 @@ int main(int argc, char *argv[]) {
     // std::tie(idx_a, idx_b, corr) = pairs[0];
     // std::cout << stocks[idx_a].name() << " : " << stocks[idx_b].name() << std::endl;
     // std::cout << corr << std::endl;
-    for (auto pair : pairs) {\
+    for (auto pair : pairs) {
         if (trade::test_pair(pair)) {
             std::cout << "found: " << pair.metric().name() << std::endl;
+            std::cout << "corr: " << pair.corr() << std::endl;
+
+            std::vector<int> buys, sells;
+            std::tie(buys, sells) = trade::get_signals(pair);
+            std::cout << "buy times: " << buys.size() << std::endl;
+            std::cout << "sell times: " << sells.size() << std::endl;
         }
     }
+
+    
     
     return 0;
 }
