@@ -100,11 +100,18 @@ inline namespace basic {
         Stock m_metric;
         char m_metric_option;
 
+        vector<int> m_buys;
+        vector<int> m_sells;
+
     public:
         StockPair(const Stock &a, const Stock &b, double corr)
             : m_a(a), m_b(b), m_spread(a - b), m_ratio(a / b), m_corr(corr), 
                 m_metric(a), m_metric_option('a') {
 
+        }
+
+        string name() const {
+            return m_a.name() + "_" + m_b.name();
         }
 
         Stock first() const {
@@ -149,6 +156,36 @@ inline namespace basic {
                 this->m_metric = m_spread;
                 this->m_metric_option = 's';
             }
+        }
+
+        vector<double> buys(char stock) const {
+            size_t count = this->m_a.dates().size();
+            vector<double> buy_prices(count, 0);
+            vector<double> prices = stock == 'a' ? m_a.prices() : m_b.prices();
+
+            for (int idx : this->m_buys)
+                buy_prices[idx] = prices[idx];
+
+            return buy_prices;
+        }
+
+        void set_buys(const vector<int> &buys) {
+            this->m_buys = buys;
+        }
+
+        vector<double> sells(char stock) const {
+            size_t count = this->m_a.dates().size();
+            vector<double> sells_prices(count, 0);
+            vector<double> prices = stock == 'a' ? m_a.prices() : m_b.prices();
+
+            for (int idx : this->m_sells)
+                sells_prices[idx] = prices[idx];
+
+            return sells_prices;
+        }
+
+        void set_sells(const vector<int> &sells) {
+            this->m_sells = sells;
         }
 
         bool operator<(const StockPair &other) const {
@@ -207,6 +244,7 @@ inline namespace basic {
             header = header && false;
         }
 
+        file.close();
         return stocks;
     }
 
@@ -289,8 +327,8 @@ inline namespace basic {
                 pair.set_metric('r');
             } else {
                 pair.set_metric('s');
-                cout << s_st.first << ", " << s_st.second << std::endl;
             }
+
             return true;
         }
 
@@ -298,12 +336,11 @@ inline namespace basic {
     }
 
     /**
-     * @brief Gets a list of indices of dates to buy/sell stocks.
+     * @brief Creates a list of indices of dates to buy/sell stocks.
      * 
-     * @param metric The metric stock on which signals are based.
-     * @return [0] stores buy times; [1] sell times.
+     * @param pair The pair of stocks whose metric has been computed.
      */
-    pair<vector<int>, vector<int>> get_signals(const StockPair &pair) {
+    void create_signals(StockPair &pair) {
         auto prices = pair.metric().prices();
         
         auto mavg_5 = mean_reversion::stat::mavg(prices, 5);
@@ -331,11 +368,49 @@ inline namespace basic {
                 buys.push_back(i);
         }
         
-        return {buys, sells};
+        pair.set_buys(buys);
+        pair.set_sells(sells);
     }
 
-    // TODO: save times as csv file
+    /**
+     * @brief Saves buy/sell times of both stocks to a csv file.
+     * 
+     * Assume that no stocks will have prices at 0. All 0's in the file stand
+     * for no moves.
+     * 
+     * @param pair The pair of stocks whose signals have been computed.
+     * @param filepath The filepath to which the data will be saved.
+     */
+    void save_to_csv(const StockPair &pair, string &filepath) {
+        ofstream file(filepath, ofstream::out);
+        if (!file.is_open()) {
+            cout << "error opening csv file: " << filepath << endl;
+            return;
+        }
 
+        string a_tick = pair.first().name();
+        string b_tick = pair.second().name();
+        string a_buy = a_tick + "_BUY";
+        string a_sell = a_tick + "_SELL";
+        string b_buy = b_tick + "_BUY";
+        string b_sell = b_tick + "_SELL";
+        file << "DATE," << a_buy << "," << a_sell << ",";
+        file << b_buy << "," << b_sell << "\n";  // headers
+
+        vector<string> dates = pair.first().dates();
+        vector<double> a_bp = pair.buys('a');
+        vector<double> a_sp = pair.sells('a');
+        vector<double> b_bp = pair.buys('b');
+        vector<double> b_sp = pair.sells('b');
+        size_t count = dates.size();
+        
+        for (size_t i = 0; i < count; ++i) {
+            file << dates[i] << "," << a_bp[i] << "," << a_sp[i] << ",";
+            file << b_bp[i] << "," << b_sp[i] << "\n";
+        }
+
+        file.close();
+    }
 } // namespace basic (sequential)
 } // namesapce trade
 } // namespace mean_reversion
