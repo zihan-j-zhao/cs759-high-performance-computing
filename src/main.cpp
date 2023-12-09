@@ -15,9 +15,18 @@ int main(int argc, char *argv[]) {
 
     int idx_a, idx_b;
     double corr;
-    std::tie(idx_a, idx_b, corr) = trade::select_pair(stocks);
-    std::cout << stocks[idx_a].name() << " : " << stocks[idx_b].name() << std::endl;
-    std::cout << corr << std::endl;
+    // trade::Stock metric(std::string("default"));
+    auto pairs = trade::find_pairs(stocks, -.75);
+    trade::sort_pairs(pairs);
+    std::cout << pairs.size() << std::endl;
+    // std::tie(idx_a, idx_b, corr) = pairs[0];
+    // std::cout << stocks[idx_a].name() << " : " << stocks[idx_b].name() << std::endl;
+    // std::cout << corr << std::endl;
+    for (auto pair : pairs) {\
+        if (trade::test_pair(pair)) {
+            std::cout << "found: " << pair.metric().name() << std::endl;
+        }
+    }
     
     return 0;
 }
