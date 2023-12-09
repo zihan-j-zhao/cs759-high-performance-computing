@@ -430,17 +430,35 @@ inline namespace basic {
         std::vector<double> average;
         int size = data.size();
         for (int i = 0; i < size - window; ++i) {
-            double sum = 0.0;
-            for (int j = i; j < i + window; ++j) {
-                sum += data[j];
-            }
-            average.push_back(sum / window);
+            std::vector<double> part(data.begin() + i, data.begin() + i + window);
+            average.push_back(mean(part));
         }
 
         return average;
     }
 
-    // TODO: ADF critical value table
+    /**
+     * @brief Computes the moving standard deviation of the given dataset.
+     * 
+     * Note that an empty vector is returned if data is empty or window size
+     * is invalid.
+     * 
+     * @param data The dataset.
+     * @param window The window size (positive integer).
+     * @return The moving standard deviation given the dataset and window size.
+     */
+    std::vector<double> mstd(const std::vector<double> &data, int window) {
+        if (data.empty() || window <= 0) return {};
+
+        std::vector<double> stds;
+        int size = data.size();
+        for (int i = 0; i < size - window; ++i) {
+            std::vector<double> part(data.begin() + i, data.begin() + i + window);
+            stds.push_back(stdev(part));
+        }
+
+        return stds;
+    }
 } // namespace basic (sequential)
 
 namespace openmp {
