@@ -1,18 +1,23 @@
 #include <iostream>
 
-#include "mean_reversion/stat.h"
+#include "mean_reversion/trade.h"
 
-int main(int argc, char *argv[])
-{
-  std::cout << "Hello World\n";
+using namespace mean_reversion;
 
-  std::vector<double> d1 = {10, 2, 7, 1, 9, 6, 5, 8, 3, 4, 
-                            10, 2, 7, 1, 9, 6, 5, 8, 3, 4, 
-                            10, 2, 7, 1, 9, 6, 5, 8, 3, 4}; // stationary!
-  std::vector<double> d2 = {1, 2, 3, 4, 5, 8};
-  double t, p;
-  std::tie(t, p) = mean_reversion::stat::adfuller(d1);
-  std::cout << t << "," << p << std::endl;
+int main(int argc, char *argv[]) {
+    // if (argc < 2) {
+    //     std::cerr << "Usage: ./main [csv_file]" << std::endl;
+    //     return 1;
+    // }
 
-  return 0;
+    std::string filepath = "F:\\University of Wisconsin-Madison\\Computer Science 759\\FinalProject\\NASDAQ_Top_50_history.csv";
+    std::vector<trade::Stock> stocks = trade::load_from_csv(filepath);
+
+    int idx_a, idx_b;
+    double corr;
+    std::tie(idx_a, idx_b, corr) = trade::select_pair(stocks);
+    std::cout << stocks[idx_a].name() << " : " << stocks[idx_b].name() << std::endl;
+    std::cout << corr << std::endl;
+    
+    return 0;
 }
