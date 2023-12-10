@@ -17,9 +17,6 @@ int main(int argc, char *argv[]) {
     std::string filepath = "/home/jaylan/private/cs759/assignments/FinalProject/nasdaq_100_history.csv";
     std::vector<trade::Stock> stocks = trade::load_from_csv(filepath);
 
-    int idx_a, idx_b;
-    double corr;
-    // trade::Stock metric(std::string("default"));
     auto pairs = trade::find_pairs(stocks, -.85);
     trade::sort_pairs(pairs);
     std::cout << pairs.size() << std::endl;

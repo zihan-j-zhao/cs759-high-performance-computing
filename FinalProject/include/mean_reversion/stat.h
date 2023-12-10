@@ -13,6 +13,10 @@
 #include <omp.h>
 #endif
 
+#ifdef X_CUDA
+#include "stat_cuda.h"
+#endif
+
 namespace mean_reversion {
 namespace stat {
 namespace openmp {
@@ -23,10 +27,6 @@ namespace openmp {
 
     std::vector<double> mstd(const std::vector<double> &data, int window);
 } // namespace openmp
-
-namespace cuda {
-    
-} // namespace cuda
 
 inline namespace basic {
     /**

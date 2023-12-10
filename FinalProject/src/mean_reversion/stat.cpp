@@ -76,7 +76,7 @@ std::vector<double> openmp::mstd(const std::vector<double> &data, int window) {
 
 double basic::reduce(const std::vector<double> &v) {
     #if X_CUDA
-    // TODO    
+    return cuda::reduce(v);
     #endif
 
     double acc = 0;
@@ -94,8 +94,6 @@ V basic::reduce(const std::vector<T> &v, V init, std::function<V(V, T)> reducer)
     #ifdef X_OPENMP
     if constexpr (std::is_same<V, double>::value)
         return openmp::reduce(v, init, reducer);
-    #elif X_CUDA
-    // TODO
     #endif
 
     V acc = init;
@@ -112,6 +110,10 @@ double basic::mean(const std::vector<double> &v) {
 }
 
 double basic::stdev(const std::vector<double> &v) {
+    #ifdef X_CUDA
+    return cuda::stdev(v);
+    #endif
+    
     if (v.empty()) return 0.0;
 
     double m = basic::mean(v);
