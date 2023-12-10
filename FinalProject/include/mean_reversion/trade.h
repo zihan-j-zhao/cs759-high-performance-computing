@@ -10,6 +10,10 @@
 #include <iostream>
 #include <algorithm>
 
+#ifdef X_OPENMP
+#include <omp.h>
+#endif
+
 #include "stat.h"
 
 namespace mean_reversion {
@@ -262,20 +266,15 @@ inline namespace basic {
 
         vector<StockPair> pairs;
         size_t count = stocks.size();
+
+        #pragma omp parallel for
         for (size_t i = 0; i < count; ++i) {
-            for (size_t j = 0; j < count; ++j) {
+            for (size_t j = i + 1; j < count; ++j) {
                 vector<double> a = stocks[i].prices();
                 vector<double> b = stocks[j].prices();
                 double corr = mean_reversion::stat::corr(a, b);
                 if (corr <= bar) {
-                    StockPair pair(stocks[i], stocks[j], corr);
-                    auto lambda = [pair](const StockPair &other) {
-                        return other == pair;
-                    };
-                    auto found = find_if(pairs.begin(), pairs.end(), lambda);
-                    if (found == end(pairs)) {
-                        pairs.push_back(pair);
-                    }
+                    pairs.push_back(StockPair(stocks[i], stocks[j], corr));
                 }
             }
         }

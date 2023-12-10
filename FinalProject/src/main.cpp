@@ -10,6 +10,10 @@ int main(int argc, char *argv[]) {
     //     return 1;
     // }
 
+    #ifdef X_OPENMP
+    std::cout << "Running OpenMP version" << std::endl;
+    #endif
+
     std::string filepath = "/home/jaylan/private/cs759/assignments/FinalProject/nasdaq_100_history.csv";
     std::vector<trade::Stock> stocks = trade::load_from_csv(filepath);
 
@@ -33,8 +37,6 @@ int main(int argc, char *argv[]) {
             trade::save_to_csv(pair, filepath);
         }
     }
-
-    
     
     return 0;
 }
