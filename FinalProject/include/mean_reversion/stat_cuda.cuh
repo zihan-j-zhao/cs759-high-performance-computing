@@ -13,7 +13,7 @@
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 
-#include "mean_reversion/kernel.h"
+#include "kernel.cuh"
 
 #define BLOCK_SIZE 256
 
@@ -21,6 +21,8 @@ namespace mean_reversion {
 namespace stat{
 namespace cuda {
     double reduce(const std::vector<double> &v);
+    
+    double mean(const std::vector<double> &v);
 
     __host__ double stdev(const std::vector<double> &v);
 } // namespace cuda

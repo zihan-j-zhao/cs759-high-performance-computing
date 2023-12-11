@@ -14,7 +14,7 @@
 #endif
 
 #ifdef X_CUDA
-#include "stat_cuda.h"
+#include "stat_cuda.cuh"
 #endif
 
 namespace mean_reversion {

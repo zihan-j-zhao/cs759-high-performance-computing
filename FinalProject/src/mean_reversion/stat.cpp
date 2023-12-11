@@ -111,7 +111,7 @@ double basic::mean(const std::vector<double> &v) {
 
 double basic::stdev(const std::vector<double> &v) {
     #ifdef X_CUDA
-    return cuda::stdev(v);
+    //return cuda::stdev(v);
     #endif
     
     if (v.empty()) return 0.0;
